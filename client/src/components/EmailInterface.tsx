@@ -10,6 +10,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import AdBanner from "@/components/AdBanner";
 
+
 interface Domain {
   id: string;
   domain: string;
