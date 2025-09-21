@@ -3,14 +3,14 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Html, OrbitControls, Float, Sparkles } from "@react-three/drei";
 import * as THREE from "three";
 
-function EnvelopeMesh(props: JSX.IntrinsicElements["group"]) {
-  const ref = useRef<THREE.Group | null>(null);
+function EnvelopeMesh(props: any) {
+  const ref = useRef<THREE.Group>(null!);
 
   // slow rotation animation
   useFrame((state, delta) => {
     if (ref.current) {
-      ref.current.rotation.y += delta * 0.3;
-      ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.3) * 0.08;
+      ref.current.rotation.y += delta * 0.25;
+      ref.current.rotation.x = Math.sin(state.clock.elapsedTime * 0.25) * 0.05;
     }
   });
 
@@ -25,7 +25,11 @@ function EnvelopeMesh(props: JSX.IntrinsicElements["group"]) {
       {/* Envelope flap */}
       <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0.45, 0.02]}>
         <planeGeometry args={[1.6, 1.0]} />
-        <meshStandardMaterial color="#0369a1" metalness={0.25} roughness={0.25} />
+        <meshStandardMaterial
+          color="#0369a1"
+          metalness={0.25}
+          roughness={0.25}
+        />
       </mesh>
 
       {/* Diagonal crease */}
@@ -43,13 +47,27 @@ function EnvelopeMesh(props: JSX.IntrinsicElements["group"]) {
       {/* Highlight stripe */}
       <mesh position={[0, 0.46, 0.06]}>
         <boxGeometry args={[1.4, 0.06, 0.01]} />
-        <meshStandardMaterial color={"#7dd3fc"} metalness={0.6} roughness={0.1} />
+        <meshStandardMaterial
+          color={"#7dd3fc"}
+          metalness={0.6}
+          roughness={0.1}
+        />
       </mesh>
     </group>
   );
 }
 
-export default function Logo3D({ size = 160 }: { size?: number }) {
+export default function Logo3D({
+  size = 160,
+  durationMs = 10000,
+  color = "#06b6d4",
+}: {
+  size?: number;
+  durationMs?: number;
+  color?: string;
+}) {
+  const start = Date.now();
+
   return (
     <div
       style={{
@@ -64,20 +82,38 @@ export default function Logo3D({ size = 160 }: { size?: number }) {
         camera={{ position: [0, 0, 3.2], fov: 40 }}
         style={{ background: "transparent", width: "100%", height: "100%" }}
       >
-        {/* Lights */}
+        {/* lights */}
         <ambientLight intensity={0.7} />
         <directionalLight position={[5, 5, 5]} intensity={0.6} />
         <pointLight position={[-10, -10, -10]} intensity={0.3} />
 
-        {/* Floating animation */}
+        {/* floating envelope */}
         <Float rotationIntensity={0.4} floatIntensity={0.8} speed={1}>
           <EnvelopeMesh />
+
+          {/* glowing hologram ring */}
+          <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.12]}>
+            <torusGeometry args={[1.2, 0.03, 16, 100]} />
+            <meshStandardMaterial
+              color={color}
+              emissive={color}
+              emissiveIntensity={0.6}
+              transparent
+              opacity={0.9}
+            />
+          </mesh>
         </Float>
 
-        {/* Sparkle effect */}
-        <Sparkles count={20} scale={1.6} position={[0, 0.2, 0]} size={3} speed={0.2} />
+        {/* sparkles for extra polish */}
+        <Sparkles
+          count={20}
+          scale={1.6}
+          position={[0, 0.2, 0]}
+          size={3}
+          speed={0.2}
+        />
 
-        {/* Orbit controls */}
+        {/* orbit controls */}
         <OrbitControls
           enablePan={false}
           enableZoom={false}
@@ -85,22 +121,43 @@ export default function Logo3D({ size = 160 }: { size?: number }) {
           maxPolarAngle={Math.PI / 1.7}
         />
 
-        {/* Text label */}
-        <Html center position={[0, -0.9, 0]}>
-          <div
-            style={{
-              textAlign: "center",
-              fontSize: 12,
-              color: "#0f172a",
-              fontWeight: 700,
-              fontFamily: "sans-serif",
-            }}
-          >
-            NextMailz
-          </div>
+        {/* countdown hologram text */}
+        <Html center position={[0, -1.1, 0]}>
+          <Countdown durationMs={durationMs} color={color} />
         </Html>
       </Canvas>
     </div>
   );
 }
 
+// Simple countdown timer component
+function Countdown({ durationMs, color }: { durationMs: number; color: string }) {
+  const [timeLeft, setTimeLeft] = React.useState(durationMs);
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      const elapsed = Date.now();
+      const remaining = Math.max(0, durationMs - (elapsed % durationMs));
+      setTimeLeft(remaining);
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [durationMs]);
+
+  const minutes = Math.floor(timeLeft / 60000);
+  const seconds = Math.floor((timeLeft % 60000) / 1000);
+
+  return (
+    <div
+      style={{
+        textAlign: "center",
+        fontSize: 14,
+        fontFamily: "monospace",
+        color: color,
+        fontWeight: "bold",
+        textShadow: "0px 0px 6px rgba(0,0,0,0.5)",
+      }}
+    >
+      {minutes}:{seconds.toString().padStart(2, "0")}
+    </div>
+  );
+}
