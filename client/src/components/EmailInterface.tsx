@@ -14,6 +14,16 @@ import Logo3D from "@/components/Logo3D";
 
 const API_BASE = "https://api.mail.tm";
 
+// ---------------------- Helper: Random Username ---------------------- //
+function generateRandomUsername(length = 10) {
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let result = "";
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return result;
+}
+
 // ---------------------- API Helpers ---------------------- //
 async function fetchDomains() {
   const res = await fetch(`${API_BASE}/domains`);
@@ -22,18 +32,22 @@ async function fetchDomains() {
 }
 
 async function createAccount(domain: string) {
-  const address = `user${Date.now()}@${domain}`;
+  const username = generateRandomUsername(8); // ✅ random user
+  const address = `${username}@${domain}`;
   const password = "SuperSecret123!";
+
   await fetch(`${API_BASE}/accounts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ address, password }),
   });
+
   const tokenRes = await fetch(`${API_BASE}/token`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ address, password }),
   });
+
   const tokenData = await tokenRes.json();
   return { address, token: tokenData.token };
 }
@@ -71,13 +85,19 @@ export default function EmailInterface() {
 
   const [account, setAccount] = useState<{ address: string; token: string } | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
+  const [selectedDomain, setSelectedDomain] = useState<string>("");
+
+  // fetch available domains
+  const { data: domains = [] } = useQuery({
+    queryKey: ["domains"],
+    queryFn: fetchDomains,
+  });
 
   // generate new account
   const generateEmailMutation = useMutation({
     mutationFn: async () => {
-      const domains = await fetchDomains();
-      const domain = domains[0].domain;
-      return await createAccount(domain);
+      if (!selectedDomain) throw new Error("Select a domain first!");
+      return await createAccount(selectedDomain);
     },
     onSuccess: (data) => {
       setAccount(data);
@@ -112,36 +132,6 @@ export default function EmailInterface() {
 
   const unreadCount = messages.filter((m: any) => !m.seen).length;
 
-  // ---------------- Ads Config ---------------- //
-  const horizontalAds = [
-    {
-      title: "Email Security Scanner",
-      description: "Scan your emails for threats and phishing attempts automatically.",
-      cta: "Try Free",
-      bg: "bg-gradient-to-r from-indigo-500 to-indigo-700",
-    },
-    {
-      title: "Cloud Storage 50GB Free",
-      description: "Secure cloud storage with end-to-end encryption and privacy first.",
-      cta: "Sign Up",
-      bg: "bg-gradient-to-r from-orange-500 to-red-500",
-    },
-  ];
-  const verticalAds = [
-    {
-      title: "VPN Service",
-      description: "Protect your online privacy with military-grade encryption.",
-      cta: "Get VPN",
-      bg: "bg-gradient-to-b from-blue-600 to-blue-800",
-    },
-    {
-      title: "Password Manager",
-      description: "Store and secure all your passwords in one place with ease.",
-      cta: "Start Trial",
-      bg: "bg-gradient-to-b from-green-600 to-emerald-700",
-    },
-  ];
-
   return (
     <div className="h-full">
       {/* Header with 3D Logo and SEO-friendly text */}
@@ -155,22 +145,24 @@ export default function EmailInterface() {
         </div>
       </div>
 
-      {/* Top Horizontal Ad */}
-      <div className="border-b border-border p-4">
-        <div className="max-w-6xl mx-auto">
-          <div className={`p-4 rounded-xl shadow-md text-white ${horizontalAds[0].bg}`}>
-            <h3 className="font-semibold">{horizontalAds[0].title}</h3>
-            <p className="text-sm opacity-90">{horizontalAds[0].description}</p>
-            <Button size="sm" variant="secondary" className="mt-2">
-              {horizontalAds[0].cta}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Email Controls */}
+      {/* Email Controls with Domain Selection */}
       <div className="bg-muted/30 border-b border-border p-6">
         <div className="max-w-2xl mx-auto space-y-4 text-center">
+          {/* Domain Dropdown */}
+          <select
+            className="border p-2 rounded-md dark:bg-gray-900 dark:border-gray-700 w-full max-w-xs mx-auto"
+            value={selectedDomain}
+            onChange={(e) => setSelectedDomain(e.target.value)}
+          >
+            <option value="">Select Domain</option>
+            {domains.map((d: any) => (
+              <option key={d.id} value={d.domain}>
+                {d.domain}
+              </option>
+            ))}
+          </select>
+
+          {/* Email Display */}
           {account ? (
             <>
               <div className="relative">
@@ -200,10 +192,11 @@ export default function EmailInterface() {
             </div>
           )}
 
+          {/* Buttons */}
           <div className="flex flex-wrap gap-3 justify-center">
             <Button
               onClick={() => generateEmailMutation.mutate()}
-              disabled={generateEmailMutation.isPending}
+              disabled={generateEmailMutation.isPending || !selectedDomain}
             >
               <Mail className="w-4 h-4 mr-2" />
               {account ? "Generate New Email" : "Generate Email"}
@@ -221,132 +214,99 @@ export default function EmailInterface() {
         </div>
       </div>
 
-      {/* Second Horizontal Ad */}
-      <div className="border-b border-border p-4 bg-muted/20">
-        <div className="max-w-6xl mx-auto">
-          <div className={`p-4 rounded-xl shadow-md text-white ${horizontalAds[1].bg}`}>
-            <h3 className="font-semibold">{horizontalAds[1].title}</h3>
-            <p className="text-sm opacity-90">{horizontalAds[1].description}</p>
-            <Button size="sm" variant="secondary" className="mt-2">
-              {horizontalAds[1].cta}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Messages + Sidebar Ads */}
+      {/* Inbox */}
       {account && (
-        <div className="p-6">
-          <div className="max-w-6xl mx-auto grid lg:grid-cols-4 gap-6">
-            {/* Sidebar Ads */}
-            <div className="lg:col-span-1 space-y-4">
-              {verticalAds.map((ad, idx) => (
-                <div
-                  key={idx}
-                  className={`p-4 rounded-xl shadow-md text-white ${ad.bg}`}
+        <div className="p-6 max-w-6xl mx-auto">
+          {!selectedMessage ? (
+            <>
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-semibold">
+                  Inbox {unreadCount > 0 && <span>({unreadCount})</span>}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => queryClient.invalidateQueries({ queryKey: ["messages"] })}
                 >
-                  <h3 className="font-semibold">{ad.title}</h3>
-                  <p className="text-sm opacity-90">{ad.description}</p>
-                  <Button size="sm" variant="secondary" className="mt-2">
-                    {ad.cta}
-                  </Button>
-                </div>
-              ))}
-            </div>
+                  <RefreshCw className="w-4 h-4 mr-2" />
+                  Refresh
+                </Button>
+              </div>
 
-            {/* Inbox / Message Detail */}
-            <div className="lg:col-span-3">
-              {!selectedMessage ? (
-                <>
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-2xl font-semibold">
-                      Inbox {unreadCount > 0 && <span>({unreadCount})</span>}
-                    </h2>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        queryClient.invalidateQueries({ queryKey: ["messages"] })
-                      }
+              {messages.length > 0 ? (
+                <div className="space-y-3">
+                  {messages.map((msg: any) => (
+                    <Card
+                      key={msg.id}
+                      className={`hover:shadow-md transition cursor-pointer ${
+                        !msg.seen ? "ring-2 ring-primary/20 bg-primary/5" : ""
+                      }`}
+                      onClick={async () => {
+                        const detail = await fetchMessageDetail(msg.id, account.token);
+                        setSelectedMessage(detail);
+                      }}
                     >
-                      <RefreshCw className="w-4 h-4 mr-2" />
-                      Refresh
-                    </Button>
-                  </div>
-
-                  {messages.length > 0 ? (
-                    <div className="space-y-3">
-                      {messages.map((msg: any) => (
-                        <Card
-                          key={msg.id}
-                          className={`hover:shadow-md transition cursor-pointer ${
-                            !msg.seen ? "ring-2 ring-primary/20 bg-primary/5" : ""
-                          }`}
-                          onClick={async () => {
-                            const detail = await fetchMessageDetail(msg.id, account.token);
-                            setSelectedMessage(detail);
-                          }}
-                        >
-                          <CardContent className="p-4">
-                            <div className="flex justify-between">
-                              <div>
-                                <div className="font-semibold">{msg.from?.address}</div>
-                                <div className="text-sm text-muted-foreground">
-                                  {msg.subject || "No subject"}
-                                </div>
-                              </div>
-                              {!msg.seen && <Badge variant="secondary">New</Badge>}
+                      <CardContent className="p-4">
+                        <div className="flex justify-between">
+                          <div>
+                            <div className="font-semibold">{msg.from?.address}</div>
+                            <div className="text-sm text-muted-foreground">
+                              {msg.subject || "No subject"}
                             </div>
-                            <p className="text-sm mt-2 text-muted-foreground line-clamp-2">
-                              {msg.intro || "No content"}
-                            </p>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-16">
-                      <Mail className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-                      <h3 className="text-lg font-medium">No messages yet</h3>
-                      <p className="text-muted-foreground">
-                        Messages sent to{" "}
-                        <span className="font-mono">{account.address}</span> will appear here.
-                      </p>
-                    </div>
-                  )}
-                </>
+                          </div>
+                          {!msg.seen && <Badge variant="secondary">New</Badge>}
+                        </div>
+                        <p className="text-sm mt-2 text-muted-foreground line-clamp-2">
+                          {msg.intro || "No content"}
+                        </p>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
               ) : (
-                <div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="mb-4"
-                    onClick={() => setSelectedMessage(null)}
-                  >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
-                    Back to Inbox
-                  </Button>
-                  <Card className="p-6">
-                    <h3 className="text-xl font-semibold mb-2">
-                      {selectedMessage.subject || "No subject"}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      From: {selectedMessage.from?.address}
-                    </p>
-                    <div
-                      className="prose max-w-none"
-                      dangerouslySetInnerHTML={{ __html: selectedMessage.html || "<p>No content</p>" }}
-                    />
-                  </Card>
+                <div className="text-center py-16">
+                  <Mail className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
+                  <h3 className="text-lg font-medium">No messages yet</h3>
+                  <p className="text-muted-foreground">
+                    Messages sent to{" "}
+                    <span className="font-mono">{account.address}</span> will appear here.
+                  </p>
                 </div>
               )}
+            </>
+          ) : (
+            <div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="mb-4"
+                onClick={() => setSelectedMessage(null)}
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Inbox
+              </Button>
+              <Card className="p-6">
+                <h3 className="text-xl font-semibold mb-2">
+                  {selectedMessage.subject || "No subject"}
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  From: {selectedMessage.from?.address}
+                </p>
+                <div
+                  className="prose max-w-none"
+                  dangerouslySetInnerHTML={{
+                    __html: selectedMessage.html || "<p>No content</p>",
+                  }}
+                />
+              </Card>
             </div>
-          </div>
+          )}
         </div>
       )}
     </div>
   );
 }
+
 
 
 
