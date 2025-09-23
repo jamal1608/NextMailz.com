@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, Mail, AlertCircle } from "lucide-react";
+import { RefreshCw, Mail, AlertCircle, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +21,7 @@ async function fetchDomains() {
   return data["hydra:member"];
 }
 
-// create account with selected domain
+// create account
 async function createAccount(domain: string) {
   const address = `user${Date.now()}@${domain}`;
   const password = "SuperSecret123!";
@@ -39,6 +39,7 @@ async function createAccount(domain: string) {
   return { address, token: tokenData.token };
 }
 
+// fetch messages
 async function fetchMessages(token: string) {
   const res = await fetch(`${API_BASE}/messages`, {
     headers: { Authorization: `Bearer ${token}` },
@@ -54,13 +55,21 @@ export default function EmailInterface() {
   const [account, setAccount] = useState<{ address: string; token: string } | null>(null);
   const [selectedDomain, setSelectedDomain] = useState<string>("");
 
-  // fetch available domains
+  // theme state
+  const [theme, setTheme] = useState("light");
+  const toggleTheme = () => {
+    const newTheme = theme === "light" ? "dark" : "light";
+    setTheme(newTheme);
+    document.documentElement.classList.toggle("dark", newTheme === "dark");
+  };
+
+  // fetch domains
   const { data: domains = [] } = useQuery({
     queryKey: ["domains"],
     queryFn: fetchDomains,
   });
 
-  // generate email with selected domain
+  // generate email
   const generateEmailMutation = useMutation({
     mutationFn: async () => {
       if (!selectedDomain) throw new Error("Select a domain first!");
@@ -100,23 +109,35 @@ export default function EmailInterface() {
 
   return (
     <div className="h-full dark:bg-gray-950 dark:text-gray-100 transition-colors">
-      {/* Header with Logo */}
-      <div className="border-b border-border p-6 bg-card dark:bg-gray-900">
-        <div className="max-w-6xl mx-auto flex flex-col items-center space-y-4">
-          <Logo3D size={96} />
-          <h1 className="text-3xl font-bold">NextMailz</h1>
-          <p className="text-muted-foreground text-lg dark:text-gray-400">
-            Generate secure temporary email addresses instantly
-          </p>
-        </div>
-      </div>
+      {/* Header */}
+      <header className="border-b border-border p-4 bg-card dark:bg-gray-900">
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          {/* Logo Left */}
+          <div className="flex items-center gap-2">
+            <Logo3D size={48} />
+            <h1 className="text-2xl font-bold">NextMailz</h1>
+          </div>
 
-      {/* Domain Select + Controls */}
-      <div className="bg-muted/30 border-b border-border p-6 dark:bg-gray-800">
+          {/* Theme Toggle */}
+          <button
+            onClick={toggleTheme}
+            className="p-2 rounded-lg border dark:border-gray-700"
+          >
+            {theme === "dark" ? (
+              <Sun className="w-5 h-5" />
+            ) : (
+              <Moon className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+      </header>
+
+      {/* Domain select + Controls */}
+      <section className="bg-muted/30 border-b border-border p-6 dark:bg-gray-800">
         <div className="max-w-2xl mx-auto text-center space-y-4">
-          {/* Dropdown */}
+          {/* Domain Dropdown */}
           <select
-            className="border p-2 rounded-md dark:bg-gray-900 dark:border-gray-700"
+            className="w-full md:w-80 px-4 py-3 rounded-lg text-lg font-medium border bg-white dark:bg-gray-900 dark:border-gray-700 focus:ring-2 focus:ring-primary"
             value={selectedDomain}
             onChange={(e) => setSelectedDomain(e.target.value)}
           >
@@ -128,7 +149,7 @@ export default function EmailInterface() {
             ))}
           </select>
 
-          {/* Buttons */}
+          {/* Action Buttons */}
           <div className="flex flex-wrap justify-center gap-3 mt-4">
             <Button
               onClick={() => generateEmailMutation.mutate()}
@@ -150,12 +171,12 @@ export default function EmailInterface() {
             )}
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Show generated email */}
+      {/* Email Info */}
       {account ? (
-        <div className="max-w-2xl mx-auto mt-6 text-center space-y-4">
-          <div className="flex items-center justify-center gap-2">
+        <div className="max-w-2xl mx-auto mt-6 text-center space-y-4 px-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-2">
             <Input
               value={account.address}
               readOnly
@@ -188,8 +209,8 @@ export default function EmailInterface() {
 
       {/* Inbox */}
       {account && (
-        <div className="max-w-4xl mx-auto mt-8">
-          <h2 className="text-2xl font-semibold mb-4">
+        <section className="max-w-6xl mx-auto mt-8 px-4">
+          <h2 className="text-xl font-semibold mb-4">
             Inbox {unreadCount > 0 && <span>({unreadCount})</span>}
           </h2>
 
@@ -212,7 +233,7 @@ export default function EmailInterface() {
                       </div>
                       {!msg.seen && <Badge variant="secondary">New</Badge>}
                     </div>
-                    <p className="text-sm mt-2 text-muted-foreground dark:text-gray-400 line-clamp-2">
+                    <p className="text-sm mt-2 line-clamp-2 dark:text-gray-400">
                       {msg.intro || "No content"}
                     </p>
                   </CardContent>
@@ -225,12 +246,11 @@ export default function EmailInterface() {
               <h3 className="text-lg font-medium">No messages yet</h3>
               <p className="text-muted-foreground dark:text-gray-400">
                 Messages sent to{" "}
-                <span className="font-mono">{account.address}</span> will appear
-                here.
+                <span className="font-mono">{account.address}</span> will appear here.
               </p>
             </div>
           )}
-        </div>
+        </section>
       )}
     </div>
   );

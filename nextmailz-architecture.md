@@ -68,8 +68,6 @@ The email interface provides a Gmail-like experience with sidebar navigation, em
 
 ### Development and Build Tools
 - **vite**: Fast build tool and development server with HMR
-- **@replit/vite-plugin-runtime-error-modal**: Development error handling
-- **@replit/vite-plugin-cartographer**: Development environment integration
 - **typescript**: Type checking and enhanced development experience
 
 ### Validation and Form Handling
