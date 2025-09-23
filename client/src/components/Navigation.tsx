@@ -1,10 +1,9 @@
-"use client";
-
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Mail, Menu, X, Sun, Moon } from "lucide-react";
+import { Menu, X, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Logo3D from "@/components/Logo3D";
 
 export default function Navigation() {
   const [location] = useLocation();
@@ -34,29 +33,21 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-background/95 dark:bg-gray-950 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-50 transition-colors">
+    <nav className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <Link href="/" data-testid="link-home">
             <div className="flex items-center space-x-3 cursor-pointer group">
-              <div className="bg-gradient-to-r from-cyan-500 to-blue-600 w-10 h-10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform shadow-md">
-                <Mail className="text-white w-5 h-5" />
-              </div>
-              <span className="text-xl font-bold text-foreground dark:text-white">
-                NextMailz
-              </span>
+              <Logo3D size={48} />
+              <span className="text-xl font-bold text-foreground">NextMailz</span>
             </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-1">
+          <div className="hidden md:flex items-center space-x-4">
             {navItems.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                data-testid={`link-${label.toLowerCase()}`}
-              >
+              <Link key={href} href={href} data-testid={`link-${label.toLowerCase()}`}>
                 <div
                   className={cn(
                     "px-4 py-2 rounded-lg transition-all cursor-pointer relative",
@@ -72,52 +63,37 @@ export default function Navigation() {
                 </div>
               </Link>
             ))}
-          </div>
 
-          {/* Theme Toggle */}
-          <div className="flex items-center gap-2">
+            {/* Theme Toggle */}
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="rounded-full"
-              aria-label="Toggle theme"
+              className="ml-4"
             >
-              {darkMode ? (
-                <Sun className="h-5 w-5 text-yellow-400" />
-              ) : (
-                <Moon className="h-5 w-5 text-gray-800" />
-              )}
-            </Button>
-
-            {/* Mobile menu button */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              data-testid="button-mobile-menu"
-            >
-              {isMobileMenuOpen ? (
-                <X className="h-5 w-5" />
-              ) : (
-                <Menu className="h-5 w-5" />
-              )}
+              {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </Button>
           </div>
+
+          {/* Mobile menu button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            data-testid="button-mobile-menu"
+          >
+            {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
         </div>
       </div>
 
       {/* Mobile Navigation */}
       {isMobileMenuOpen && (
-        <div className="md:hidden bg-background/95 dark:bg-gray-950 backdrop-blur border-t border-border transition-colors">
+        <div className="md:hidden bg-background/95 backdrop-blur border-t border-border">
           <div className="px-4 py-4 space-y-2">
             {navItems.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                data-testid={`mobile-link-${label.toLowerCase()}`}
-              >
+              <Link key={href} href={href} data-testid={`mobile-link-${label.toLowerCase()}`}>
                 <div
                   className={cn(
                     "block px-4 py-3 rounded-lg cursor-pointer transition-all",
@@ -132,25 +108,15 @@ export default function Navigation() {
               </Link>
             ))}
 
-            {/* Mobile Theme Toggle */}
+            {/* Theme Toggle for Mobile */}
             <div className="pt-2 border-t border-border">
               <Button
+                className="w-full"
                 variant="outline"
-                className="w-full flex items-center justify-center gap-2"
-                onClick={() => {
-                  toggleTheme();
-                  setIsMobileMenuOpen(false);
-                }}
+                onClick={toggleTheme}
               >
-                {darkMode ? (
-                  <>
-                    <Sun className="h-4 w-4 text-yellow-400" /> Light Mode
-                  </>
-                ) : (
-                  <>
-                    <Moon className="h-4 w-4 text-gray-800" /> Dark Mode
-                  </>
-                )}
+                {darkMode ? <Sun className="h-5 w-5 mr-2" /> : <Moon className="h-5 w-5 mr-2" />}
+                {darkMode ? "Light Mode" : "Dark Mode"}
               </Button>
             </div>
           </div>

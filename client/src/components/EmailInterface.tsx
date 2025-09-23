@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { RefreshCw, Mail, AlertCircle } from "lucide-react";
+import { RefreshCw, Mail, AlertCircle, Copy, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
-// 3D Logo
+// 3D Logo (same as Navigation mein use karna chahte ho)
 import Logo3D from "@/components/Logo3D";
 
 const API_BASE = "https://api.mail.tm";
@@ -99,41 +99,9 @@ export default function EmailInterface() {
 
   const unreadCount = messages.filter((m: any) => !m.seen).length;
 
-  // ---------------- Ads Config ----------------
-  const horizontalAds = [
-    {
-      title: "Anonymous Email Generator",
-      description: "Get free disposable and secure temporary emails instantly.",
-      cta: "Try Free",
-      bg: "bg-gradient-to-r from-indigo-500 to-indigo-700",
-    },
-    {
-      title: "Cloud Storage 50GB Free",
-      description: "Secure cloud storage with end-to-end encryption.",
-      cta: "Sign Up",
-      bg: "bg-gradient-to-r from-orange-500 to-red-500",
-    },
-  ];
-
-  const verticalAds = [
-    {
-      title: "VPN Service",
-      description: "Protect your online privacy with military-grade encryption.",
-      cta: "Get VPN",
-      bg: "bg-gradient-to-b from-blue-600 to-blue-800",
-    },
-    {
-      title: "Password Manager",
-      description: "Store and secure all your passwords in one place.",
-      cta: "Start Trial",
-      bg: "bg-gradient-to-b from-green-600 to-emerald-700",
-    },
-  ];
-  // ------------------------------------------------
-
   return (
     <div className="h-full dark:bg-gray-950 dark:text-gray-100 transition-colors">
-      {/* Header */}
+      {/* Header with same Logo3D */}
       <div className="border-b border-border p-6 bg-card dark:bg-gray-900">
         <div className="max-w-6xl mx-auto flex flex-col items-center space-y-4">
           <Logo3D size={96} />
@@ -144,20 +112,7 @@ export default function EmailInterface() {
         </div>
       </div>
 
-      {/* Top Horizontal Ad */}
-      <div className="border-b border-border p-4">
-        <div className="max-w-6xl mx-auto">
-          <div className={`p-4 rounded-xl shadow-md text-white ${horizontalAds[0].bg}`}>
-            <h3 className="font-semibold">{horizontalAds[0].title}</h3>
-            <p className="text-sm opacity-90">{horizontalAds[0].description}</p>
-            <Button size="sm" variant="secondary" className="mt-2">
-              {horizontalAds[0].cta}
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Domain Select + Controls */}
+      {/* Domain select */}
       <div className="bg-muted/30 border-b border-border p-6 dark:bg-gray-800">
         <div className="max-w-2xl mx-auto text-center space-y-4">
           <select
@@ -173,7 +128,7 @@ export default function EmailInterface() {
             ))}
           </select>
 
-          <div className="flex flex-wrap justify-center gap-3 mt-4">
+          <div className="flex justify-center mt-4">
             <Button
               onClick={() => generateEmailMutation.mutate()}
               disabled={generateEmailMutation.isPending || !selectedDomain}
@@ -181,34 +136,63 @@ export default function EmailInterface() {
               <Mail className="w-4 h-4 mr-2" />
               {account ? "Generate New Email" : "Generate Email"}
             </Button>
-            {account && (
-              <Button
-                variant="outline"
-                onClick={() => queryClient.invalidateQueries({ queryKey: ["messages"] })}
-              >
-                <RefreshCw className="w-4 h-4 mr-2" />
-                Refresh
-              </Button>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Layout with Left Ad + Inbox + Right Ad */}
+      {/* Generated Email Info */}
+      {account ? (
+        <div className="max-w-2xl mx-auto mt-6 text-center space-y-4">
+          <div className="flex items-center justify-center gap-2">
+            <Input
+              value={account.address}
+              readOnly
+              className="text-center font-mono dark:bg-gray-900 dark:border-gray-700"
+            />
+            <Button variant="secondary" onClick={copyEmail}>
+              <Copy className="w-4 h-4 mr-2" /> Copy
+            </Button>
+            <Button variant="destructive" onClick={clearEmail}>
+              <Trash2 className="w-4 h-4 mr-2" /> Delete
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["messages"] })}
+            >
+              <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+            </Button>
+          </div>
+          <div>
+            <Badge variant="default">Active</Badge>
+            {unreadCount > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {unreadCount} new
+              </Badge>
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="text-center py-8">
+          <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
+          <p className="text-muted-foreground dark:text-gray-400">
+            No temporary email generated yet
+          </p>
+        </div>
+      )}
+
+      {/* Inbox + Ads layout */}
       {account && (
         <div className="p-6">
           <div className="max-w-7xl mx-auto grid lg:grid-cols-12 gap-6">
-            {/* Left Ad */}
-            <div className="lg:col-span-3 space-y-4">
-              {verticalAds.slice(0, 1).map((ad, idx) => (
-                <div key={idx} className={`p-4 rounded-xl shadow-md text-white ${ad.bg}`}>
-                  <h3 className="font-semibold">{ad.title}</h3>
-                  <p className="text-sm opacity-90">{ad.description}</p>
-                  <Button size="sm" variant="secondary" className="mt-2">
-                    {ad.cta}
-                  </Button>
-                </div>
-              ))}
+            {/* Left vertical ad */}
+            <div className="lg:col-span-3 hidden lg:block">
+              <div className="p-4 rounded-xl shadow-md bg-gradient-to-b from-blue-600 to-blue-800 text-white">
+                <h3 className="font-semibold">VPN Service</h3>
+                <p className="text-sm opacity-90">Protect your privacy online</p>
+                <Button size="sm" variant="secondary" className="mt-2">
+                  Get VPN
+                </Button>
+              </div>
             </div>
 
             {/* Inbox Center */}
@@ -217,14 +201,6 @@ export default function EmailInterface() {
                 <h2 className="text-2xl font-semibold">
                   Inbox {unreadCount > 0 && <span>({unreadCount})</span>}
                 </h2>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => queryClient.invalidateQueries({ queryKey: ["messages"] })}
-                >
-                  <RefreshCw className="w-4 h-4 mr-2" />
-                  Refresh
-                </Button>
               </div>
 
               {messages.length > 0 ? (
@@ -264,37 +240,23 @@ export default function EmailInterface() {
               )}
             </div>
 
-            {/* Right Ad */}
-            <div className="lg:col-span-3 space-y-4">
-              {verticalAds.slice(1, 2).map((ad, idx) => (
-                <div key={idx} className={`p-4 rounded-xl shadow-md text-white ${ad.bg}`}>
-                  <h3 className="font-semibold">{ad.title}</h3>
-                  <p className="text-sm opacity-90">{ad.description}</p>
-                  <Button size="sm" variant="secondary" className="mt-2">
-                    {ad.cta}
-                  </Button>
-                </div>
-              ))}
+            {/* Right vertical ad */}
+            <div className="lg:col-span-3 hidden lg:block">
+              <div className="p-4 rounded-xl shadow-md bg-gradient-to-b from-green-600 to-emerald-700 text-white">
+                <h3 className="font-semibold">Password Manager</h3>
+                <p className="text-sm opacity-90">Store all your passwords securely</p>
+                <Button size="sm" variant="secondary" className="mt-2">
+                  Start Trial
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Bottom Horizontal Ad */}
-      <div className="border-t border-border p-4 bg-muted/20">
-        <div className="max-w-6xl mx-auto">
-          <div className={`p-4 rounded-xl shadow-md text-white ${horizontalAds[1].bg}`}>
-            <h3 className="font-semibold">{horizontalAds[1].title}</h3>
-            <p className="text-sm opacity-90">{horizontalAds[1].description}</p>
-            <Button size="sm" variant="secondary" className="mt-2">
-              {horizontalAds[1].cta}
-            </Button>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
+
 
 
 
