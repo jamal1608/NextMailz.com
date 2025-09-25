@@ -1,8 +1,7 @@
-// index.tsx
-import { posts } from "../../../../data/posts";
-import BlogCard from "../../components/BlogCard";
+import { posts } from "@/data/posts";
+import BlogCard from "@/components/BlogCard";
 
-export default function BlogIndex() {
+export default function Blog() {
   return (
     <div className="max-w-5xl mx-auto py-12 px-4">
       <h1 className="text-4xl font-bold mb-8">Blog</h1>

@@ -1,0 +1,94 @@
+/* -----------------------------
+   Tailwind Base
+----------------------------- */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* -----------------------------
+   Global Body Styles
+----------------------------- */
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, sans-serif;
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+/* -----------------------------
+   Headings & Paragraphs
+----------------------------- */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  line-height: 1.25;
+  color: #111827;
+}
+
+p {
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+/* -----------------------------
+   Links
+----------------------------- */
+a {
+  color: #3b82f6;
+  text-decoration: none;
+  transition: color 0.2s ease-in-out;
+}
+
+a:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+/* -----------------------------
+   Images & Figures
+----------------------------- */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+figure {
+  margin: 2rem 0;
+}
+
+/* -----------------------------
+   Blog Cards
+----------------------------- */
+.blog-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #ffffff;
+  transition: box-shadow 0.3s ease;
+}
+
+.blog-card:hover {
+  box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+/* -----------------------------
+   Ads Section
+----------------------------- */
+.ad-banner {
+  background-color: #f3f4f6;
+  border: 1px dashed #d1d5db;
+  text-align: center;
+  padding: 1rem;
+  margin: 2rem 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+/* -----------------------------
+   Responsive Utilities
+----------------------------- */
+@media (max-width: 768px) {
+  .blog-card {
+    margin-bottom: 1.5rem;
+  }
+}
