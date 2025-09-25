@@ -1,41 +1,31 @@
-import { Switch, Route } from "wouter";
-import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "@/lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
-import Home from "@/pages/Home";
-import About from "@/pages/About";
-import Blog from "@/pages/Blog";
-import BlogPost from "@/pages/BlogPost";
-import Privacy from "@/pages/Privacy";
-import NotFound from "@/pages/not-found";
 
-function Router() {
-  return (
-    <Switch>
-      <Route path="/" component={Home} />
-      <Route path="/about" component={About} />
-      <Route path="/blog/:id" component={BlogPost} />
-      <Route path="/blog" component={Blog} />
-      <Route path="/privacy" component={Privacy} />
-      <Route component={NotFound} />
-    </Switch>
-  );
-}
+import "@/styles/globals.css";
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <div className="min-h-screen flex flex-col">
+          {/* ✅ Navigation sab pages me common */}
           <Navigation />
+
+          {/* ✅ Page content */}
           <main className="flex-1">
-            <Router />
+            {/* Yaha tum React Router se pages render karoge */}
           </main>
+
+          {/* ✅ Footer */}
           <Footer />
         </div>
+
+        {/* ✅ Toast notifications */}
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>
@@ -43,3 +33,5 @@ function App() {
 }
 
 export default App;
+
+
