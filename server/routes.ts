@@ -2,7 +2,8 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertTemporaryEmailSchema, insertMessageSchema } from "@shared/schema";
+import { temporaryEmails, messages } from "@shared/schema";
+
 
 // Mail.tm API configuration
 const MAIL_TM_BASE_URL = "https://api.mail.tm";

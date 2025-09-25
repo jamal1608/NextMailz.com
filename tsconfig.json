@@ -20,10 +20,12 @@
       "@/hooks/*": ["client/src/hooks/*"],
       "@/lib/*": ["client/src/lib/*"],
       "@/data/*": ["data/*"],
-      "@/shared/*": ["shared/*"]
+       "@shared/*": ["shared/*"],
+      "@client/*": ["client/src/*"],
+      "@server/*": ["server/*"]
     }
   },
-  "include": ["client/src", "data", "shared", "server"],
+  "include": ["client/src", "server", "shared"],
   "exclude": ["node_modules"]
 }
 
