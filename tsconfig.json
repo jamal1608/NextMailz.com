@@ -6,25 +6,27 @@
     "skipLibCheck": true,
     "strict": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
+    "noEmit": false,
+    "outDir": "dist",
     "esModuleInterop": true,
     "module": "ESNext",
     "moduleResolution": "Node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
-    "baseUrl": "./client/src",
+    "baseUrl": "./",
     "paths": {
-      "@/components/*": ["components/*"],
-      "@/hooks/*": ["hooks/*"],
-      "@/lib/*": ["lib/*"],
-      "@/data/*": ["../../data/*"],        // root data folder
-      "@/shared/*": ["../../shared/*"]
+      "@/components/*": ["client/src/components/*"],
+      "@/hooks/*": ["client/src/hooks/*"],
+      "@/lib/*": ["client/src/lib/*"],
+      "@/data/*": ["data/*"],
+      "@/shared/*": ["shared/*"]
     }
   },
-  "include": ["client/src", "data"],       // <-- root folder include
+  "include": ["client/src", "data", "shared", "server"],
   "exclude": ["node_modules"]
 }
+
 
 
 

@@ -1,7 +1,8 @@
 import { Pool, neonConfig } from '@neondatabase/serverless';
 import { drizzle } from 'drizzle-orm/neon-serverless';
 import ws from "ws";
-import * as schema from "@shared/schema";
+import schema from "../../shared/schema";
+
 import { eq, desc, and, lte } from "drizzle-orm";
 import { sql } from "drizzle-orm";
 
