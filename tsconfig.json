@@ -8,6 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     "noEmit": false,
     "outDir": "dist",
+    "rootDir": ".",
     "esModuleInterop": true,
     "module": "ESNext",
     "moduleResolution": "Node",
@@ -15,7 +16,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "baseUrl": "./",
-    "types": ["node"],           // <-- add this
+    "types": ["node"],
     "paths": {
       "@/components/*": ["client/src/components/*"],
       "@/hooks/*": ["client/src/hooks/*"],
@@ -26,6 +27,6 @@
       "@server/*": ["server/*"]
     }
   },
-  "include": ["client/src", "server", "shared"],
-  "exclude": ["node_modules"]
+  "include": ["client/src/**/*", "server/**/*", "shared/**/*"],
+  "exclude": ["node_modules", "dist"]
 }
