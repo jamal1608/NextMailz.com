@@ -9,6 +9,7 @@ import Home from "./pages/Home";
 import About from "./pages/About";
 import Privacy from "./pages/Privacy";
 import NotFound from "./pages/not-found";
+import Blog from "./pages/blog/index";
 import "./index.css";
 
 function App() {
@@ -22,6 +23,14 @@ function App() {
             <Switch>
               <Route path="/" component={Home} />
               <Route path="/about" component={About} />
+              <Route path="/blog" component={Blog} />
+              <Route path="/blog/:id">
+                {(params) => {
+                  // Dynamically import the blog post component
+                  const BlogPost = require("./pages/blog/[id].tsx").default;
+                  return <BlogPost params={params} />;
+                }}
+              </Route>
               <Route path="/privacy" component={Privacy} />
               <Route component={NotFound} />
             </Switch>
