@@ -5,12 +5,12 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Route, Switch } from "wouter";
-import Home from "./pages/Home";
-import About from "./pages/About";
-import Privacy from "./pages/Privacy";
-import NotFound from "./pages/not-found";
-import Blog from "./pages/blog";
-import BlogPost from "./pages/blog/BlogPost";
+import Home from "@/pages/Home";
+import About from "@/pages/About";
+import Privacy from "@/pages/Privacy";
+import NotFound from "@/pages/not-found";
+import Blog from "@/pages/blog/index";
+import BlogPost from "@/pages/blog/BlogPost";
 import "./index.css";
 
 function App() {

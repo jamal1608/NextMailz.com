@@ -22,6 +22,7 @@
       "@/hooks/*": ["client/src/hooks/*"],
       "@/lib/*": ["client/src/lib/*"],
       "@/data/*": ["data/*"],
+      "@/pages/*": ["client/src/pages/*"],
       "@shared/*": ["shared/*"],
       "@client/*": ["client/src/*"],
       "@server/*": ["server/*"]
