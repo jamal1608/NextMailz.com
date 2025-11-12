@@ -30,7 +30,7 @@ export default defineConfig(async () => {
         "@assets": path.resolve(__dirname, "attached_assets"),
         "@client": path.resolve(__dirname, "client", "src"),
         "@server": path.resolve(__dirname, "server"),
-        "@data": path.resolve(__dirname, "data"),
+        "@/data": path.resolve(__dirname, "data"),
       },
     },
     root: path.resolve(__dirname, "client"),
@@ -42,6 +42,7 @@ export default defineConfig(async () => {
       fs: {
         strict: true,
         deny: ["**/.*"],
+        allow: [".."],
       },
     },
   };
