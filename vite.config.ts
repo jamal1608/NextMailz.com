@@ -24,14 +24,17 @@ export default defineConfig(async () => {
   return {
     plugins,
     resolve: {
-      alias: {
-        "@": path.resolve(__dirname, "client", "src"),
-        "@shared": path.resolve(__dirname, "shared"),
-        "@assets": path.resolve(__dirname, "attached_assets"),
-        "@client": path.resolve(__dirname, "client", "src"),
-        "@server": path.resolve(__dirname, "server"),
-        "@/data": path.resolve(__dirname, "data"),
-      },
+      alias: [
+        { find: '@/data', replacement: path.resolve(__dirname, "data") },
+        { find: '@/components', replacement: path.resolve(__dirname, "client/src/components") },
+        { find: '@/hooks', replacement: path.resolve(__dirname, "client/src/hooks") },
+        { find: '@/lib', replacement: path.resolve(__dirname, "client/src/lib") },
+        { find: '@', replacement: path.resolve(__dirname, "client/src") },
+        { find: '@shared', replacement: path.resolve(__dirname, "shared") },
+        { find: '@assets', replacement: path.resolve(__dirname, "attached_assets") },
+        { find: '@client', replacement: path.resolve(__dirname, "client/src") },
+        { find: '@server', replacement: path.resolve(__dirname, "server") },
+      ],
     },
     root: path.resolve(__dirname, "client"),
     build: {
@@ -40,9 +43,7 @@ export default defineConfig(async () => {
     },
     server: {
       fs: {
-        strict: true,
-        deny: ["**/.*"],
-        allow: [".."],
+        strict: false,
       },
     },
   };
