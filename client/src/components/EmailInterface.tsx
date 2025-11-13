@@ -1,7 +1,5 @@
-"use client";
-
-import { useState } from "react";
-import { Copy, RefreshCw, Trash2, Mail, AlertCircle, ArrowLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Copy, RefreshCw, Trash2, Mail, AlertCircle, ArrowLeft, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -22,6 +20,38 @@ function generateRandomUsername(length = 10) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return result;
+}
+
+// ---------------------- Timer Component ---------------------- //
+function CountdownTimer({ expiryTime }: { expiryTime: number }) {
+  const [timeLeft, setTimeLeft] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const remaining = Math.max(0, Math.floor((expiryTime - Date.now()) / 1000));
+      setTimeLeft(remaining);
+      
+      if (remaining === 0) {
+        clearInterval(interval);
+        localStorage.removeItem('tempEmail');
+        window.location.reload();
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [expiryTime]);
+
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      <Clock className="w-4 h-4" />
+      <span className="font-mono">
+        {minutes}:{seconds.toString().padStart(2, '0')}
+      </span>
+    </div>
+  );
 }
 
 // ---------------------- API Helpers ---------------------- //
@@ -49,7 +79,11 @@ async function createAccount(domain: string) {
   });
 
   const tokenData = await tokenRes.json();
-  return { address, token: tokenData.token };
+  return { 
+    address, 
+    token: tokenData.token,
+    expiryTime: Date.now() + (10 * 60 * 1000) // 10 minutes from now
+  };
 }
 
 async function fetchMessages(token: string) {
@@ -103,9 +137,35 @@ export default function EmailInterface() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [account, setAccount] = useState<{ address: string; token: string } | null>(null);
+  const [account, setAccount] = useState<{ address: string; token: string; expiryTime: number } | null>(null);
   const [selectedMessage, setSelectedMessage] = useState<any>(null);
   const [selectedDomain, setSelectedDomain] = useState<string>("");
+
+  // Load account from localStorage on mount
+  useEffect(() => {
+    const savedAccount = localStorage.getItem('tempEmail');
+    if (savedAccount) {
+      try {
+        const parsed = JSON.parse(savedAccount);
+        // Check if email hasn't expired
+        if (parsed.expiryTime && parsed.expiryTime > Date.now()) {
+          setAccount(parsed);
+        } else {
+          localStorage.removeItem('tempEmail');
+        }
+      } catch (error) {
+        console.error('Error loading saved email:', error);
+        localStorage.removeItem('tempEmail');
+      }
+    }
+  }, []);
+
+  // Save account to localStorage whenever it changes
+  useEffect(() => {
+    if (account) {
+      localStorage.setItem('tempEmail', JSON.stringify(account));
+    }
+  }, [account]);
 
   // fetch available domains
   const { data: domains = [] } = useQuery({
@@ -140,6 +200,7 @@ export default function EmailInterface() {
   const clearEmail = () => {
     setAccount(null);
     setSelectedMessage(null);
+    localStorage.removeItem('tempEmail');
     toast({ title: "Cleared", description: "Temporary email removed." });
   };
 
@@ -159,8 +220,8 @@ export default function EmailInterface() {
         <div className="max-w-6xl mx-auto flex flex-col items-center space-y-4">
           <Logo3D size={96} />
           <h1 className="text-3xl font-bold">NextMailz</h1>
-          <p className="text-muted-foreground text-lg">
-            Temporary email service for privacy, anonymity, and secure communication.
+          <p className="text-muted-foreground text-lg text-center">
+            Temporary 10-minute email for privacy, anonymity, and secure communication.
           </p>
         </div>
       </div>
@@ -186,6 +247,7 @@ export default function EmailInterface() {
             className="border p-3 rounded-lg dark:bg-gray-900 dark:border-gray-700 w-full max-w-sm mx-auto text-lg"
             value={selectedDomain}
             onChange={(e) => setSelectedDomain(e.target.value)}
+            disabled={!!account}
           >
             <option value="">Select Domain</option>
             {domains.map((d: any) => (
@@ -205,21 +267,25 @@ export default function EmailInterface() {
                   className="pr-28 text-center text-lg font-mono"
                 />
                 <div className="absolute right-1 top-1/2 -translate-y-1/2 flex gap-2">
-                  <Button onClick={copyEmail}>Copy</Button>
-                  <Button variant="destructive" onClick={clearEmail}>
+                  <Button onClick={copyEmail} size="sm">Copy</Button>
+                  <Button variant="destructive" onClick={clearEmail} size="sm">
                     Delete
                   </Button>
                 </div>
               </div>
-              <div className="flex justify-center gap-3">
+              <div className="flex justify-center gap-3 flex-wrap">
                 <Badge variant="default">Active</Badge>
                 {unreadCount > 0 && <Badge variant="secondary">{unreadCount} new</Badge>}
+                <Badge variant="outline" className="px-3 py-1">
+                  <CountdownTimer expiryTime={account.expiryTime} />
+                </Badge>
               </div>
             </>
           ) : (
             <div className="text-center py-6">
               <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-2" />
               <p className="text-muted-foreground">No temporary email generated yet</p>
+              <p className="text-sm text-muted-foreground mt-2">Email expires after 10 minutes</p>
             </div>
           )}
 
@@ -343,7 +409,7 @@ export default function EmailInterface() {
                       From: {selectedMessage.from?.address}
                     </p>
                     <div
-                      className="prose max-w-none"
+                      className="prose max-w-none dark:prose-invert"
                       dangerouslySetInnerHTML={{
                         __html: selectedMessage.html || "<p>No content</p>",
                       }}
@@ -369,11 +435,3 @@ export default function EmailInterface() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
